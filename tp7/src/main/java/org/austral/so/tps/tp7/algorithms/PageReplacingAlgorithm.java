@@ -4,7 +4,7 @@ import org.austral.so.tps.tp7.model.core.ProcessPageTable;
 import org.austral.so.tps.tp7.model.memories.OSRAM;
 
 
-public interface PageOrderingAlgorithm {
+public interface PageReplacingAlgorithm {
 
 	int computePageToReplace(OSRAM ram, int pageNumber, ProcessPageTable processPageTable);
 	String getName();

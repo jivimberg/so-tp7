@@ -6,7 +6,7 @@ import org.austral.so.tps.tp7.model.core.ProcessPageTable;
 import org.austral.so.tps.tp7.model.core.ProcessPageTable.PageTableRow;
 import org.austral.so.tps.tp7.model.memories.OSRAM;
 
-public class LRUAlgorithm implements PageOrderingAlgorithm {
+public class LRUAlgorithm implements PageReplacingAlgorithm {
 
 	public int computePageToReplace(OSRAM ram, int pageNumber, ProcessPageTable processPageTable) {
 		Map<Integer, PageTableRow> rows = processPageTable.getPageTableRows();

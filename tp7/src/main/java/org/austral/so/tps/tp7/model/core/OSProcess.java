@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.austral.so.tps.tp7.listeners.ProcessListener;
-import org.austral.so.tps.tp7.model.addresses.Page;
 import org.austral.so.tps.tp7.model.memories.OSVM;
 
 public class OSProcess {

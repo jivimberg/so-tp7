@@ -3,7 +3,7 @@ package org.austral.so.tps.tp7.model.memories;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.austral.so.tps.tp7.model.addresses.Page;
+import org.austral.so.tps.tp7.model.core.Page;
 
 
 public class OSVM {

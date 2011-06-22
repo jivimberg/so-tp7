@@ -4,41 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.austral.so.tps.tp7.listeners.RAMListener;
-import org.austral.so.tps.tp7.model.addresses.Page;
+import org.austral.so.tps.tp7.model.core.PageFrame;
 
 public class OSRAM {
 	
-	private Page[] frames;
-	private int i;
+	private List<PageFrame> pageFrames;
 	private int lastLocation;
 
 	private List<RAMListener> listeners;
 
 
 	public OSRAM(int pagesQty) {
-		frames = new Page[pagesQty];
-		i = 0;
-		lastLocation = 0;
 		listeners = new ArrayList<RAMListener>();
+		pageFrames = new ArrayList<PageFrame>(pagesQty);
+		this.lastLocation = 0;
 	}
 
-	public Page getFrame(int frameLocation) {
-		return frames[frameLocation];
+	public PageFrame getFrame(int frameLocation) {
+		return pageFrames.get(frameLocation);
 	}
 
-	public boolean isFull() {
-		return i == frames.length;
-	}
-
-	public void addFrame(Page newPage, int location) {
-		frames[location] = newPage;
+	public void addFrame(PageFrame newFrame, int location) {
+		pageFrames.add(location, newFrame);
 		lastLocation = location;
-	}
-
-	public int addFrame(Page newPage) {
-		frames[i] = newPage;
-		lastLocation = i;
-		return i++;
 	}
 
 	public void addListener(RAMListener listener) {
@@ -46,12 +34,12 @@ public class OSRAM {
 	}
 
 	public void notifyPageLoaded(int processNumber, int pageNumber, int frameLocation) {
-		for (int i = 0; i < listeners.size(); i++) {
-			listeners.get(i).pageLoaded(processNumber, pageNumber, frameLocation);
+		for (RAMListener listener : listeners) {
+			listener.pageLoaded(processNumber, pageNumber, frameLocation);
 		}
 	}
 
-	public int getLastWrittenLocation() {
+	public int getLastLocation() {
 		return lastLocation;
 	}
 
