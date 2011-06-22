@@ -7,11 +7,9 @@ import java.util.Map;
 import org.austral.so.tps.tp7.algorithms.PageReplacingAlgorithm;
 import org.austral.so.tps.tp7.listeners.ProcessListener;
 import org.austral.so.tps.tp7.listeners.RAMListener;
-import org.austral.so.tps.tp7.model.addresses.LogicalAddress;
 import org.austral.so.tps.tp7.model.addresses.PhysicalAddress;
 import org.austral.so.tps.tp7.model.memories.HardDisk;
 import org.austral.so.tps.tp7.model.memories.OSRAM;
-import org.austral.so.tps.tp7.model.memories.OSVM;
 
 public class OS {
 	
@@ -35,29 +33,24 @@ public class OS {
 	}
 
 	public void addProcess(OSProcess process) {
-		processes.put(process, new ProcessPageTable(process));
 		process.setSO(this);
+		processes.put(process, new ProcessPageTable(process, PAGE_AND_FRAME_SIZE));
+		for(int i= 0; i< PAGE_AND_FRAME_SIZE; i++){
+			processes.get(process).addPage(i);
+		}
 	}
 
-	public PageFrame loadPage(OSProcess process, LogicalAddress vAddress) {
+	public void loadPage(OSProcess process, int pageNumber) {
 		ProcessPageTable pageTable = processes.get(process);
-		PhysicalAddress physicalAddress = pageTable.getPhysicalAddress(vAddress);
+		PhysicalAddress physicalAddress = pageTable.getPhysicalAddress(pageNumber);
 		
-		if (physicalAddress != null) {
-			return ram.getFrame(physicalAddress.getFrameLocation());
-		} else {
-			PageFrame newFrame = hd.getFrame(physicalAddress);
-			int ramLocation;
-			if (ram.isFull()) {
-				ramLocation = algorithm.computePageToReplace(ram, pageNumber, pageTable);
-				process.notifyListenersPageReplaced(ram.getFrame(ramLocation).getFatherN(), ram.getFrame(ramLocation).getNumber());
-				ram.addFrame(newPage, ramLocation);
-			}else{
-				ramLocation = ram.addFrame(newPage);			
-			}
-			pageTable.linkPage(pageNumber, ramLocation);
-			ram.notifyPageLoaded(process.getNumber(), pageNumber, ramLocation);
-			return ram.getFrame(ramLocation);
+		PageFrame newFrame = hd.getFrame(physicalAddress);
+		int ramLocation;
+		if (ram.isFull()) {
+			ramLocation = algorithm.computePageToReplace(ram, pageNumber, pageTable);
+			ram.addFrame(newFrame, ramLocation);
+		}else{
+			ram.addFrame(newFrame);			
 		}
 	}
 
@@ -81,4 +74,14 @@ public class OS {
 			}
 		}
 	}
+
+	public Map<OSProcess, ProcessPageTable> getProcesses() {
+		return processes;
+	}
+
+	public void setProcesses(Map<OSProcess, ProcessPageTable> processes) {
+		this.processes = processes;
+	}
+	
+	
 }

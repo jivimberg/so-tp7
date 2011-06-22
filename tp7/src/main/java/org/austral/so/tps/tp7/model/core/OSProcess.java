@@ -8,40 +8,31 @@ import org.austral.so.tps.tp7.model.memories.OSVM;
 
 public class OSProcess {
 	
-	private OSVM vm;
 	private int pagesQty;
-	private int n;
+	private int processNumber;
 	private OS os;
 
 	private List<ProcessListener> listeners;
 
 	public OSProcess(int n, int pagesQty) {
-		vm = new OSVM(pagesQty, n);
 		this.pagesQty = pagesQty;
-		this.n = n;
+		this.processNumber = n;
 
 		listeners = new ArrayList<ProcessListener>();
 	}
 
 	public void run() {
-		int pagesRequested = (int) (Math.random() * vm.getPages().size());
+		ProcessPageTable pageTable = os.getProcesses().get(processNumber);
+		int pagesRequested = (int) (Math.random() * pageTable.getMaxQuantity());
 		for (int i = 0; i < pagesRequested; i++) {
-			int pageRequested = (int) (Math.random() * vm.getPages().size());
-			int chunkRequested = (int) (Math.random() * vm.getPages().get(i).getChunks().size());
-			os.loadPage(this, pageRequested, chunkRequested);
+			int pageRequested = (int) (Math.random() * pageTable.getMaxQuantity());
+			os.loadPage(this, pageRequested);
 			notifyListenersPageRequested(pageRequested);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 			}
 		}
-	}
-	public OSVM getVm() {
-		return vm;
-	}
-
-	public List<Page> getPages() {
-		return vm.getPages();
 	}
 
 	public int getPagesQty() {
@@ -54,7 +45,7 @@ public class OSProcess {
 
 	public void notifyListenersPageRequested(int pageNumber){
 		 for(int i=0;i<listeners.size();i++){
-			 listeners.get(i).pageRequested(n, pageNumber);
+			 listeners.get(i).pageRequested(processNumber, pageNumber);
 		 }
 	}
 
@@ -65,7 +56,7 @@ public class OSProcess {
 	}
 
 	public int getNumber(){
-		return n;
+		return processNumber;
 	}
 
 	public void setSO(OS so) {
