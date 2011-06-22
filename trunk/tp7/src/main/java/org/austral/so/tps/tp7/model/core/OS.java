@@ -4,17 +4,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.austral.so.tps.tp7.algorithms.PageOrderingAlgorithm;
+import org.austral.so.tps.tp7.algorithms.PageReplacingAlgorithm;
 import org.austral.so.tps.tp7.listeners.ProcessListener;
 import org.austral.so.tps.tp7.listeners.RAMListener;
 import org.austral.so.tps.tp7.model.addresses.LogicalAddress;
-import org.austral.so.tps.tp7.model.addresses.Page;
 import org.austral.so.tps.tp7.model.addresses.PhysicalAddress;
 import org.austral.so.tps.tp7.model.memories.HardDisk;
 import org.austral.so.tps.tp7.model.memories.OSRAM;
 import org.austral.so.tps.tp7.model.memories.OSVM;
 
 public class OS {
+	
 	private Map<OSProcess, ProcessPageTable> processes;
 
 	public static final int PAGE_AND_FRAME_SIZE = 5;
@@ -23,12 +23,11 @@ public class OS {
 	public static final int SLEEP_TIME = 100;
 
 	private OSRAM ram;
-	private OSVM vm;
 	private HardDisk hd;
 
-	private PageOrderingAlgorithm algorithm;
+	private PageReplacingAlgorithm algorithm;
 
-	public OS(PageOrderingAlgorithm algorithm) {
+	public OS(PageReplacingAlgorithm algorithm) {
 		this.processes = new HashMap<OSProcess, ProcessPageTable>();
 		ram = new OSRAM(RAM_SIZE);
 		hd = new HardDisk(HD_SIZE);
@@ -38,18 +37,16 @@ public class OS {
 	public void addProcess(OSProcess process) {
 		processes.put(process, new ProcessPageTable(process));
 		process.setSO(this);
-		hd.writeProcess(process);
 	}
 
-	public Page loadPage(OSProcess process, int pageNumber, int chunkNumber) {
-		LogicalAddress vAddress = new LogicalAddress(pageNumber, chunkNumber);
+	public PageFrame loadPage(OSProcess process, LogicalAddress vAddress) {
 		ProcessPageTable pageTable = processes.get(process);
-		PhysicalAddress pAddress = pageTable.getPhysicalAddress(vAddress);
-		if (pAddress != null) {
-			return ram.getFrame(pAddress.getFrameLocation());
+		PhysicalAddress physicalAddress = pageTable.getPhysicalAddress(vAddress);
+		
+		if (physicalAddress != null) {
+			return ram.getFrame(physicalAddress.getFrameLocation());
 		} else {
-			int hdLocation = hd.getFrameLocation(process.getVm().getPage(pageNumber));
-			Page newPage = hd.getFrame(hdLocation);
+			PageFrame newFrame = hd.getFrame(physicalAddress);
 			int ramLocation;
 			if (ram.isFull()) {
 				ramLocation = algorithm.computePageToReplace(ram, pageNumber, pageTable);
