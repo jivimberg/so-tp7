@@ -10,14 +10,17 @@ public class OSRAM {
 	
 	private List<PageFrame> pageFrames;
 	private int lastLocation;
-
+	private int framesQuantity;
+	
 	private List<RAMListener> listeners;
 
 
 	public OSRAM(int pagesQty) {
-		listeners = new ArrayList<RAMListener>();
-		pageFrames = new ArrayList<PageFrame>(pagesQty);
+		this.listeners = new ArrayList<RAMListener>();
+		this.pageFrames = new ArrayList<PageFrame>(pagesQty);
+		
 		this.lastLocation = 0;
+		this.framesQuantity = pagesQty;
 	}
 
 	public PageFrame getFrame(int frameLocation) {
@@ -27,6 +30,17 @@ public class OSRAM {
 	public void addFrame(PageFrame newFrame, int location) {
 		pageFrames.add(location, newFrame);
 		lastLocation = location;
+	}
+	
+	public void addFrame(PageFrame newFrame) {
+		for(int i= 0; i < framesQuantity; i++){
+			if(pageFrames.get(i).equals(null)){
+				pageFrames.add(newFrame);
+				lastLocation = i;
+				return;
+			}
+			
+		}
 	}
 
 	public void addListener(RAMListener listener) {
@@ -38,9 +52,13 @@ public class OSRAM {
 			listener.pageLoaded(processNumber, pageNumber, frameLocation);
 		}
 	}
+	
+	public boolean isFull() {
+		return framesQuantity == pageFrames.size();
+
+	}
 
 	public int getLastLocation() {
 		return lastLocation;
 	}
-
 }
