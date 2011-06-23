@@ -9,7 +9,6 @@ import org.austral.so.tps.tp7.model.core.PageFrame;
 public class OSRAM {
 	
 	private List<PageFrame> pageFrames;
-	private int lastLocation;
 	private int framesQuantity;
 	
 	private List<RAMListener> listeners;
@@ -19,7 +18,6 @@ public class OSRAM {
 		this.listeners = new ArrayList<RAMListener>();
 		this.pageFrames = new ArrayList<PageFrame>(pagesQty);
 		
-		this.lastLocation = 0;
 		this.framesQuantity = pagesQty;
 	}
 
@@ -27,38 +25,43 @@ public class OSRAM {
 		return pageFrames.get(frameLocation);
 	}
 
-	public void addFrame(PageFrame newFrame, int location) {
+	public void replaceFrame(PageFrame newFrame, int location) {
 		pageFrames.add(location, newFrame);
-		lastLocation = location;
+		//TODO notify
 	}
 	
 	public void addFrame(PageFrame newFrame) {
+		pageFrames.add(newFrame);
+		//TODO notify
+	}
+	
+	public int getFrameLocation(PageFrame newFrame) {
 		for(int i= 0; i < framesQuantity; i++){
-			if(pageFrames.get(i).equals(null)){
-				pageFrames.add(newFrame);
-				lastLocation = i;
-				return;
+			if(pageFrames.get(i).equals(newFrame)){
+				return i;
 			}
-			
 		}
+		return -1;
 	}
 
 	public void addListener(RAMListener listener) {
 		listeners.add(listener);
 	}
 
-	public void notifyPageLoaded(int processNumber, int pageNumber, int frameLocation) {
+	private void notifyPageFrameLoaded(int processNumber, int pageNumber, int frameLocation) {
 		for (RAMListener listener : listeners) {
-			listener.pageLoaded(processNumber, pageNumber, frameLocation);
+			listener.pageFrameLoaded(processNumber, pageNumber, frameLocation);
+		}
+	}
+	
+	private void notifyPageFrameRequested(PageFrame pageFrame) {
+		for (RAMListener listener : listeners) {
+			listener.pageFrameRequested(pageFrame);
 		}
 	}
 	
 	public boolean isFull() {
 		return framesQuantity == pageFrames.size();
 
-	}
-
-	public int getLastLocation() {
-		return lastLocation;
 	}
 }

@@ -20,7 +20,7 @@ public class ProcessPageTable {
 		if(!page.isInRAM()){
 			return page.getPhysicalAddress();
 		}else{
-			return null;
+			return null; 
 		}
 	}
 	
@@ -28,7 +28,7 @@ public class ProcessPageTable {
 		rows.put(key, new Page());
 	}
 
-	public Page getPageTableRow(int pageNumber){
+	public Page getPage(int pageNumber){
 		return rows.get(pageNumber);				
 	}
 

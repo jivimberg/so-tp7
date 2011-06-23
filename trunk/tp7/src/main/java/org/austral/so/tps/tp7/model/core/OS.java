@@ -2,9 +2,11 @@ package org.austral.so.tps.tp7.model.core;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.austral.so.tps.tp7.algorithms.PageReplacingAlgorithm;
+import org.austral.so.tps.tp7.listeners.OSListener;
 import org.austral.so.tps.tp7.listeners.ProcessListener;
 import org.austral.so.tps.tp7.listeners.RAMListener;
 import org.austral.so.tps.tp7.model.addresses.PhysicalAddress;
@@ -13,7 +15,7 @@ import org.austral.so.tps.tp7.model.memories.OSRAM;
 
 public class OS {
 	
-	private Map<OSProcess, ProcessPageTable> processes;
+	private Map<OSProcess, ProcessPageTable> processesAndTables;
 
 	public static final int PAGE_AND_FRAME_SIZE = 5;
 	public static final int RAM_SIZE = 20;
@@ -24,9 +26,11 @@ public class OS {
 	private HardDisk hd;
 
 	private PageReplacingAlgorithm algorithm;
+	
+	private List<OSListener> listeners;
 
 	public OS(PageReplacingAlgorithm algorithm) {
-		this.processes = new HashMap<OSProcess, ProcessPageTable>();
+		this.processesAndTables = new HashMap<OSProcess, ProcessPageTable>();
 		ram = new OSRAM(RAM_SIZE);
 		hd = new HardDisk(HD_SIZE);
 		this.algorithm = algorithm;
@@ -34,23 +38,40 @@ public class OS {
 
 	public void addProcess(OSProcess process) {
 		process.setSO(this);
-		processes.put(process, new ProcessPageTable(process, PAGE_AND_FRAME_SIZE));
+		processesAndTables.put(process, new ProcessPageTable(process, PAGE_AND_FRAME_SIZE));
+		//N pages are added to the process table
 		for(int i= 0; i< PAGE_AND_FRAME_SIZE; i++){
-			processes.get(process).addPage(i);
+			processesAndTables.get(process).addPage(i);
 		}
 	}
 
 	public void loadPage(OSProcess process, int pageNumber) {
-		ProcessPageTable pageTable = processes.get(process);
+		ProcessPageTable pageTable = processesAndTables.get(process); //getPageTable
 		PhysicalAddress physicalAddress = pageTable.getPhysicalAddress(pageNumber);
 		
-		PageFrame newFrame = hd.getFrame(physicalAddress);
-		int ramLocation;
-		if (ram.isFull()) {
-			ramLocation = algorithm.computePageToReplace(ram, pageNumber, pageTable);
-			ram.addFrame(newFrame, ramLocation);
-		}else{
-			ram.addFrame(newFrame);			
+		Page page = pageTable.getPage(pageNumber);
+		page.setReferenced(true);
+		notifyPageReferenced(page);
+		
+		if(physicalAddress != null){
+			//Page is not already on RAM
+			PageFrame newFrame = hd.getFrame(physicalAddress);
+			Page pageToReplace;
+			if (ram.isFull()) {
+				pageToReplace = algorithm.computePageToReplace(ram, pageTable);
+				int location = ram.getFrameLocation(pageToReplace); //Something is missing
+				ram.replaceFrame(newFrame, location);
+				pageToReplace.setInRAM(false);
+			}else{
+				ram.addFrame(newFrame);			
+			}		
+			page.setInRAM(true);
+		}
+	}
+	
+	public void notifyPageReferenced(Page page){
+		for (OSListener listener : listeners) {
+			listener.pageReferenced(page);
 		}
 	}
 
@@ -61,11 +82,15 @@ public class OS {
 	public void addOSRAMListener(RAMListener listener){
 		ram.addListener(listener);		
 	}
+	
+	public void addOSListener(OSListener listener){
+		listeners.add(listener);		
+	}
 
 	public void run() {
 		Iterator<OSProcess> it;
 		while (true) {
-			it = processes.keySet().iterator();
+			it = processesAndTables.keySet().iterator();
 			while (it.hasNext()){
 				try {
 					it.next().run();
@@ -76,11 +101,11 @@ public class OS {
 	}
 
 	public Map<OSProcess, ProcessPageTable> getProcesses() {
-		return processes;
+		return processesAndTables;
 	}
 
 	public void setProcesses(Map<OSProcess, ProcessPageTable> processes) {
-		this.processes = processes;
+		this.processesAndTables = processes;
 	}
 	
 	

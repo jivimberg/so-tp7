@@ -7,16 +7,17 @@ public class Page {
 	
 	private PhysicalAddress physicalAddress;
 	private boolean referenced;
-	private boolean inRAM;
+	private boolean isInRAM;
 	
+
 	public boolean isInRAM() {
-		return inRAM;
+		return isInRAM;
 	}
-	
-	public void setInRAM(boolean inRAM) {
-		this.inRAM = inRAM;
+
+	public void setInRAM(boolean isInRAM) {
+		this.isInRAM = isInRAM;
 	}
-	
+
 	public PhysicalAddress getPhysicalAddress() {
 		return physicalAddress;
 	}
