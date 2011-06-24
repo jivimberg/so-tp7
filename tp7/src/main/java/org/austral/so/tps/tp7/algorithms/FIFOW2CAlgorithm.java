@@ -1,12 +1,10 @@
 package org.austral.so.tps.tp7.algorithms;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.austral.so.tps.tp7.model.core.Page;
 import org.austral.so.tps.tp7.model.core.PageFrame;
-import org.austral.so.tps.tp7.model.core.ProcessPageTable;
-import org.austral.so.tps.tp7.model.memories.OSRAM;
 
 public class FIFOW2CAlgorithm implements PageReplacingAlgorithm{
 
@@ -21,14 +19,26 @@ public class FIFOW2CAlgorithm implements PageReplacingAlgorithm{
 	}
 
 	@Override
-	public int computePageToReplace(OSRAM ram, ProcessPageTable processPageTable) {
-		// TODO Auto-generated method stub
-		return 0;
+	public PageFrame computePageToReplace() {
+		while(true){
+			PageFrame auxFrame = queue.poll();
+			if(auxFrame.isReferenced()){
+				auxFrame.setReferenced(false);
+				queue.add(auxFrame);
+			}else{
+				return auxFrame;
+			}
+		}
 	}
 
 	@Override
-	public void pageReferenced(Page page) {
-		// TODO Auto-generated method stub
-		
+	public void pageReferenced(PageFrame pageFrame) {
+		Iterator<PageFrame> it = queue.iterator();
+		while(it.hasNext()){
+			PageFrame aux = it.next();
+			if(aux.getPhysicalAddress() == pageFrame.getPhysicalAddress()){
+				aux.setReferenced(true);
+			}
+		}	
 	}
 }

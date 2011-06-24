@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.austral.so.tps.tp7.listeners.RAMListener;
+import org.austral.so.tps.tp7.model.addresses.PhysicalAddress;
 import org.austral.so.tps.tp7.model.core.PageFrame;
 
 public class OSRAM {
@@ -21,18 +22,22 @@ public class OSRAM {
 		this.framesQuantity = pagesQty;
 	}
 
-	public PageFrame getFrame(int frameLocation) {
-		return pageFrames.get(frameLocation);
+	public PageFrame getFrame(PhysicalAddress address) {
+		for (PageFrame pageFrame : pageFrames){
+			if(pageFrame.getPhysicalAddress().equals(address))
+				return pageFrame;
+		}
+		return null;
 	}
 
-	public void replaceFrame(PageFrame newFrame, int location) {
-		pageFrames.add(location, newFrame);
-		//TODO notify
+	public void replaceFrame(PageFrame newFrame, PageFrame frameToReplace) {		
+		pageFrames.add(pageFrames.indexOf(frameToReplace), newFrame);
+		newFrame.setInRAM(true);
 	}
 	
 	public void addFrame(PageFrame newFrame) {
 		pageFrames.add(newFrame);
-		//TODO notify
+		newFrame.setInRAM(true);
 	}
 	
 	public int getFrameLocation(PageFrame newFrame) {
@@ -47,21 +52,16 @@ public class OSRAM {
 	public void addListener(RAMListener listener) {
 		listeners.add(listener);
 	}
-
-	private void notifyPageFrameLoaded(int processNumber, int pageNumber, int frameLocation) {
-		for (RAMListener listener : listeners) {
-			listener.pageFrameLoaded(processNumber, pageNumber, frameLocation);
-		}
-	}
-	
-	private void notifyPageFrameRequested(PageFrame pageFrame) {
-		for (RAMListener listener : listeners) {
-			listener.pageFrameRequested(pageFrame);
-		}
-	}
 	
 	public boolean isFull() {
 		return framesQuantity == pageFrames.size();
-
+	}
+	
+	public boolean isPageFrameInRAM (PhysicalAddress address){
+		for(PageFrame frame: pageFrames){
+			if(frame.getPhysicalAddress().equals(address))
+				return true;
+		}
+		return false;
 	}
 }

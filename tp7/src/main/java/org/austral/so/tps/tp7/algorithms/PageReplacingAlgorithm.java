@@ -1,14 +1,15 @@
 package org.austral.so.tps.tp7.algorithms;
 
-import org.austral.so.tps.tp7.listeners.OSListener;
-import org.austral.so.tps.tp7.model.core.Page;
+import org.austral.so.tps.tp7.model.core.PageFrame;
 import org.austral.so.tps.tp7.model.core.ProcessPageTable;
 import org.austral.so.tps.tp7.model.memories.OSRAM;
 
 
-public interface PageReplacingAlgorithm extends OSListener{
+public interface PageReplacingAlgorithm{
 
-	Page computePageToReplace(OSRAM ram, ProcessPageTable processPageTable);
+	PageFrame computePageToReplace();
 	
 	String getName();
+	
+	void pageReferenced(PageFrame pageFrame);
 }
