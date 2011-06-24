@@ -16,12 +16,7 @@ public class ProcessPageTable {
 	}
 
 	public PhysicalAddress getPhysicalAddress(int pageNumber){
-		Page page = rows.get(pageNumber);
-		if(!page.isInRAM()){
-			return page.getPhysicalAddress();
-		}else{
-			return null; 
-		}
+		return rows.get(pageNumber).getPhysicalAddress();
 	}
 	
 	public void addPage(int key){

@@ -1,4 +1,4 @@
-package jar;
+package org.austral.so.tps.tp7;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
